@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_application'])
         'birthdate' => sanitize($_POST['birthdate'] ?? ''),
         'gender' => sanitize($_POST['gender'] ?? ''),
         'program_id' => intval($_POST['program_id'] ?? 0),
+        'year_level' => '1st Year',
         'applicant_type' => APPLICANT_NEW,
     ];
     
