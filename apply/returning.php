@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_application'])
         'birthdate' => sanitize($_POST['birthdate'] ?? ''),
         'gender' => sanitize($_POST['gender'] ?? ''),
         'program_id' => intval($_POST['program_id'] ?? 0),
+        'year_level' => sanitize($_POST['year_level'] ?? ''),
         'previous_school' => sanitize($_POST['previous_school'] ?? ''),  // Same school, but for tracking
         'previous_program' => sanitize($_POST['previous_program'] ?? ''),
         'applicant_type' => APPLICANT_RETURNING,
@@ -66,6 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_application'])
     
     if ($formData['program_id'] <= 0) {
         $errors[] = 'Program selection is required';
+    }
+    
+    if (empty($formData['year_level']) || !in_array($formData['year_level'], ['1st Year', '2nd Year', '3rd Year', '4th Year'])) {
+        $errors[] = 'Year level is required';
     }
     
     if (empty($formData['previous_program'])) {
@@ -197,6 +202,17 @@ require_once '../includes/header.php';
                                     <?= htmlspecialchars($program['code'] . ' - ' . $program['name']) ?>
                                 </option>
                             <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="year_level" class="block text-gray-700 font-medium mb-2">Year Level *</label>
+                        <select id="year_level" name="year_level" class="form-select" required>
+                            <option value="" disabled <?= empty($formData['year_level'] ?? '') ? 'selected' : '' ?>>Select Year Level</option>
+                            <option value="1st Year" <?= ($formData['year_level'] ?? '') === '1st Year' ? 'selected' : '' ?>>1st Year</option>
+                            <option value="2nd Year" <?= ($formData['year_level'] ?? '') === '2nd Year' ? 'selected' : '' ?>>2nd Year</option>
+                            <option value="3rd Year" <?= ($formData['year_level'] ?? '') === '3rd Year' ? 'selected' : '' ?>>3rd Year</option>
+                            <option value="4th Year" <?= ($formData['year_level'] ?? '') === '4th Year' ? 'selected' : '' ?>>4th Year</option>
                         </select>
                     </div>
                 </div>
