@@ -3,6 +3,9 @@ require_once '../includes/config.php';
 require_once '../includes/db.php';
 require_once '../includes/functions.php';
 
+// Set timezone to Philippines
+date_default_timezone_set('Asia/Manila');
+
 $pageTitle = 'Admin Dashboard';
 
 // Check if admin is logged in
@@ -16,6 +19,55 @@ $admin = getAdminById($_SESSION['admin_id']);
 
 // Get application statistics
 $stats = countApplicationsByStatus();
+
+// Get admission statistics by program
+$admissionsByProgram = fetchAll(
+    "SELECT 
+        p.name as program_name,
+        COUNT(*) as total,
+        SUM(CASE WHEN a.status = 'accepted' THEN 1 ELSE 0 END) as accepted
+     FROM applications a
+     JOIN programs p ON a.program_id = p.id
+     GROUP BY p.name
+     ORDER BY total DESC"
+);
+
+// Get admission statistics by year
+$admissionsByYear = fetchAll(
+    "SELECT 
+        YEAR(created_at) as year,
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted
+     FROM applications
+     GROUP BY YEAR(created_at)
+     ORDER BY year DESC"
+);
+
+
+
+// Get admission statistics by day
+$admissionsByDay = fetchAll(
+    "SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted
+     FROM applications
+     WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+     GROUP BY DATE(created_at)
+     ORDER BY date DESC"
+);
+
+// Get admission statistics by week
+$admissionsByWeek = fetchAll(
+    "SELECT 
+        YEARWEEK(created_at) as week,
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted
+     FROM applications
+     WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 12 WEEK)
+     GROUP BY YEARWEEK(created_at)
+     ORDER BY week DESC"
+);
 
 // Get recent applications
 $recentApplications = fetchAll(
@@ -45,7 +97,7 @@ require_once 'admin_header.php';
         <h1 class="text-3xl font-bold text-dark-purple">Dashboard</h1>
         <div class="text-gray-600">
             <span>Today's Date: </span>
-            <span class="font-medium"><?= date('F j, Y') ?></span>
+            <span class="font-medium"><?= date('l, F j, Y') ?></span>
         </div>
     </div>
     
@@ -74,6 +126,125 @@ require_once 'admin_header.php';
         <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-red-400">
             <h3 class="text-gray-500 font-medium mb-2">Rejected</h3>
             <p class="text-3xl font-bold text-red-600"><?= $stats['rejected'] ?? 0 ?></p>
+        </div>
+    </div>
+    
+    <!-- Admission Statistics -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-bold text-dark-purple mb-6">Admission Statistics</h2>
+        
+        <!-- Tabs -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="flex space-x-8" aria-label="Tabs">
+                <button class="tab-button active" data-tab="program">By Program</button>
+                <button class="tab-button" data-tab="year">By Year</button>
+                <button class="tab-button" data-tab="week">By Week</button>
+                <button class="tab-button" data-tab="day">By Day</button>
+            </nav>
+        </div>
+        
+        <!-- Year Statistics -->
+        <div class="tab-content hidden" id="year-tab">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">Year</th>
+                            <th class="py-3 px-6 text-left">Total Applications</th>
+                            <th class="py-3 px-6 text-left">Accepted</th>
+                            <th class="py-3 px-6 text-left">Acceptance Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm">
+                        <?php foreach ($admissionsByYear as $year): ?>
+                            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                <td class="py-3 px-6"><?= $year['year'] ?></td>
+                                <td class="py-3 px-6"><?= $year['total'] ?></td>
+                                <td class="py-3 px-6"><?= $year['accepted'] ?></td>
+                                <td class="py-3 px-6"><?= round(($year['accepted'] / $year['total']) * 100, 2) ?>%</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Program Statistics -->
+        <div class="tab-content active" id="program-tab">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">Program</th>
+                            <th class="py-3 px-6 text-left">Total Applications</th>
+                            <th class="py-3 px-6 text-left">Accepted</th>
+                            <th class="py-3 px-6 text-left">Acceptance Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm">
+                        <?php foreach ($admissionsByProgram as $program): ?>
+                            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                <td class="py-3 px-6"><?= htmlspecialchars($program['program_name']) ?></td>
+                                <td class="py-3 px-6"><?= $program['total'] ?></td>
+                                <td class="py-3 px-6"><?= $program['accepted'] ?></td>
+                                <td class="py-3 px-6"><?= round(($program['accepted'] / $program['total']) * 100, 2) ?>%</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Daily Statistics -->
+        <div class="tab-content hidden" id="day-tab">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">Date</th>
+                            <th class="py-3 px-6 text-left">Total Applications</th>
+                            <th class="py-3 px-6 text-left">Accepted</th>
+                            <th class="py-3 px-6 text-left">Acceptance Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm">
+                        <?php foreach ($admissionsByDay as $day): ?>
+                            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                <td class="py-3 px-6"><?= date('M d, Y', strtotime($day['date'])) ?></td>
+                                <td class="py-3 px-6"><?= $day['total'] ?></td>
+                                <td class="py-3 px-6"><?= $day['accepted'] ?></td>
+                                <td class="py-3 px-6"><?= round(($day['accepted'] / $day['total']) * 100, 2) ?>%</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Weekly Statistics -->
+        <div class="tab-content hidden" id="week-tab">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">Week</th>
+                            <th class="py-3 px-6 text-left">Total Applications</th>
+                            <th class="py-3 px-6 text-left">Accepted</th>
+                            <th class="py-3 px-6 text-left">Acceptance Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm">
+                        <?php foreach ($admissionsByWeek as $week): ?>
+                            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                <td class="py-3 px-6">Week <?= substr($week['week'], 4) ?>, <?= substr($week['week'], 0, 4) ?></td>
+                                <td class="py-3 px-6"><?= $week['total'] ?></td>
+                                <td class="py-3 px-6"><?= $week['accepted'] ?></td>
+                                <td class="py-3 px-6"><?= round(($week['accepted'] / $week['total']) * 100, 2) ?>%</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -110,6 +281,7 @@ require_once 'admin_header.php';
                         <th class="py-3 px-6 text-left">Ref No</th>
                         <th class="py-3 px-6 text-left">Name</th>
                         <th class="py-3 px-6 text-left">Program</th>
+                        <th class="py-3 px-6 text-left">Year Level</th>
                         <th class="py-3 px-6 text-left">Type</th>
                         <th class="py-3 px-6 text-left">Status</th>
                         <th class="py-3 px-6 text-left">Date</th>
@@ -139,6 +311,9 @@ require_once 'admin_header.php';
                                 </td>
                                 <td class="py-3 px-6 text-left">
                                     <?= htmlspecialchars($app['program_name']) ?>
+                                </td>
+                                <td class="py-3 px-6 text-left">
+                                    <?= htmlspecialchars($app['year_level']) ?>
                                 </td>
                                 <td class="py-3 px-6 text-left">
                                     <span class="capitalize"><?= $app['applicant_type'] ?></span>
@@ -225,6 +400,23 @@ require_once 'admin_header.php';
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Tab functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and contents
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.add('hidden'));
+                
+                // Add active class to clicked button and corresponding content
+                button.classList.add('active');
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+            });
+        });
+        
         // Application Status Chart
         const statusCtx = document.getElementById('statusChart').getContext('2d');
         const statusChart = new Chart(statusCtx, {
@@ -296,5 +488,29 @@ require_once 'admin_header.php';
         });
     });
 </script>
+
+<style>
+    .tab-button {
+        padding: 1rem 0.25rem;
+        border-bottom-width: 2px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        border-color: transparent;
+    }
+    
+    .tab-button.active {
+        border-color: #8243D9;
+        color: #8243D9;
+    }
+    
+    .tab-button:not(.active) {
+        color: #6B7280;
+    }
+    
+    .tab-button:not(.active):hover {
+        color: #374151;
+        border-color: #D1D5DB;
+    }
+</style>
 
 <?php require_once 'admin_footer.php'; ?>
