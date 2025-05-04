@@ -193,17 +193,7 @@ require_once 'includes/header.php';
                 <div class="mb-6">
                     <h3 class="text-lg font-bold text-dark-purple mb-4">Select Payment Method</h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label class="payment-method border border-gray-200 rounded-lg p-4 cursor-pointer transition duration-300 hover:border-purple hover:bg-purple-50">
-                            <input type="radio" name="payment_method" value="credit_card" class="hidden">
-                            <div class="flex flex-col items-center">
-                                <svg class="w-10 h-10 text-purple mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                </svg>
-                                <span class="font-medium">Credit/Debit Card</span>
-                            </div>
-                        </label>
-                        
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label class="payment-method border border-gray-200 rounded-lg p-4 cursor-pointer transition duration-300 hover:border-purple hover:bg-purple-50">
                             <input type="radio" name="payment_method" value="bank_transfer" class="hidden">
                             <div class="flex flex-col items-center">
@@ -226,92 +216,63 @@ require_once 'includes/header.php';
                     </div>
                 </div>
                 
-                <div id="payment-details" class="hidden">
-                    <!-- Credit Card Payment -->
-                    <div id="credit-card-details" class="payment-details">
-                        <h3 class="text-lg font-bold text-dark-purple mb-4">Credit/Debit Card Details</h3>
-                        
-                        <div class="mb-4">
-                            <label for="card_number" class="block text-gray-700 font-medium mb-2">Card Number</label>
-                            <input type="text" id="card_number" placeholder="XXXX XXXX XXXX XXXX" class="form-input">
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label for="expiry_date" class="block text-gray-700 font-medium mb-2">Expiry Date</label>
-                                <input type="text" id="expiry_date" placeholder="MM/YY" class="form-input">
-                            </div>
-                            
-                            <div>
-                                <label for="cvv" class="block text-gray-700 font-medium mb-2">CVV</label>
-                                <input type="text" id="cvv" placeholder="XXX" class="form-input">
-                            </div>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <label for="cardholder_name" class="block text-gray-700 font-medium mb-2">Cardholder Name</label>
-                            <input type="text" id="cardholder_name" class="form-input">
-                        </div>
+                <!-- Bank Transfer Details -->
+                <div id="bank-transfer-details" class="payment-details hidden mb-6">
+                    <h3 class="text-lg font-bold text-dark-purple mb-4">Bank Transfer Details</h3>
+                    
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <p class="font-medium mb-2">Please transfer the exact amount to the following bank account:</p>
+                        <ul class="space-y-2 text-gray-700">
+                            <li><strong>Bank Name:</strong> University Bank</li>
+                            <li><strong>Account Name:</strong> University Admissions</li>
+                            <li><strong>Account Number:</strong> 1234-5678-9012</li>
+                            <li><strong>Amount:</strong> PHP <?= number_format(ADMISSION_FEE, 2) ?></li>
+                            <li><strong>Reference:</strong> <?= $application['reference_no'] ?></li>
+                        </ul>
                     </div>
                     
-                    <!-- Bank Transfer Payment -->
-                    <div id="bank-transfer-details" class="payment-details">
-                        <h3 class="text-lg font-bold text-dark-purple mb-4">Bank Transfer Details</h3>
-                        
-                        <div class="bg-gray-50 rounded-lg p-6 mb-6">
-                            <p class="font-medium mb-2">Please transfer the exact amount to the following bank account:</p>
-                            <ul class="space-y-2 text-gray-700">
-                                <li><strong>Bank Name:</strong> University Bank</li>
-                                <li><strong>Account Name:</strong> University Admissions</li>
-                                <li><strong>Account Number:</strong> 1234-5678-9012</li>
-                                <li><strong>Amount:</strong> PHP <?= number_format(ADMISSION_FEE, 2) ?></li>
-                                <li><strong>Reference:</strong> <?= $application['reference_no'] ?></li>
-                            </ul>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <p class="text-gray-700 mb-2">After making the payment, please enter the transaction reference number:</p>
-                            <label for="bank_reference" class="block text-gray-700 font-medium mb-2">Transaction Reference Number</label>
-                            <input type="text" name="reference_number" id="bank_reference" class="form-input" required>
-                        </div>
+                    <div class="mb-4">
+                        <p class="text-gray-700 mb-2">After making the payment, please enter the transaction reference number:</p>
+                        <label for="bank_reference" class="block text-gray-700 font-medium mb-2">Transaction Reference Number</label>
+                        <input type="text" name="reference_number" id="bank_reference" class="form-input" required>
                     </div>
+                </div>
+                
+                <!-- E-Wallet Payment -->
+                <div id="e-wallet-details" class="payment-details hidden mb-6">
+                    <h3 class="text-lg font-bold text-dark-purple mb-4">E-Wallet Payment</h3>
                     
-                    <!-- E-Wallet Payment -->
-                    <div id="e-wallet-details" class="payment-details">
-                        <h3 class="text-lg font-bold text-dark-purple mb-4">E-Wallet Payment</h3>
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <p class="font-medium mb-2">Please send the payment to the following e-wallet accounts:</p>
                         
-                        <div class="bg-gray-50 rounded-lg p-6 mb-6">
-                            <p class="font-medium mb-2">Please send the payment to the following e-wallet accounts:</p>
-                            
-                            <div class="space-y-4">
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h4 class="font-bold text-medium-dark-purple">GCash</h4>
-                                    <p class="text-gray-700">Account Number: 0912-345-6789</p>
-                                    <p class="text-gray-700">Name: University Admissions</p>
-                                </div>
-                                
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h4 class="font-bold text-medium-dark-purple">PayMaya</h4>
-                                    <p class="text-gray-700">Account Number: 0912-345-6789</p>
-                                    <p class="text-gray-700">Name: University Admissions</p>
-                                </div>
+                        <div class="space-y-4">
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-medium-dark-purple">GCash</h4>
+                                <p class="text-gray-700">Account Number: 0912-345-6789</p>
+                                <p class="text-gray-700">Name: University Admissions</p>
                             </div>
                             
-                            <p class="mt-4 text-sm text-gray-600">
-                                Be sure to include your reference number (<?= $application['reference_no'] ?>) in the payment description.
-                            </p>
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-medium-dark-purple">PayMaya</h4>
+                                <p class="text-gray-700">Account Number: 0912-345-6789</p>
+                                <p class="text-gray-700">Name: University Admissions</p>
+                            </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <p class="text-gray-700 mb-2">After making the payment, please enter the transaction reference number:</p>
-                            <label for="ewallet_reference" class="block text-gray-700 font-medium mb-2">Transaction Reference Number</label>
-                            <input type="text" name="reference_number" id="ewallet_reference" class="form-input" required>
-                        </div>
+                        <p class="mt-4 text-sm text-gray-600">
+                            Be sure to include your reference number (<?= $application['reference_no'] ?>) in the payment description.
+                        </p>
                     </div>
                     
-                    <div class="mt-6">
-                        <button type="submit" name="submit_payment" class="btn-primary w-full">Submit Payment</button>
+                    <div class="mb-4">
+                        <p class="text-gray-700 mb-2">After making the payment, please enter the transaction reference number:</p>
+                        <label for="ewallet_reference" class="block text-gray-700 font-medium mb-2">Transaction Reference Number</label>
+                        <input type="text" name="reference_number" id="ewallet_reference" class="form-input" required>
                     </div>
+                </div>
+                
+                <div id="payment-submit" class="mt-6 hidden">
+                    <button type="submit" name="submit_payment" class="btn-primary w-full">Submit Payment</button>
                 </div>
             </form>
         </section>
@@ -379,30 +340,60 @@ require_once 'includes/header.php';
     document.addEventListener('DOMContentLoaded', function() {
         // Handle payment method selection
         const paymentMethods = document.querySelectorAll('.payment-method input[type="radio"]');
-        const paymentDetails = document.getElementById('payment-details');
-        const creditCardDetails = document.getElementById('credit-card-details');
+        
+        // Get reference to both detail sections and the submit button container
         const bankTransferDetails = document.getElementById('bank-transfer-details');
         const eWalletDetails = document.getElementById('e-wallet-details');
+        const paymentSubmit = document.getElementById('payment-submit');
+        
+        // Reference fields
+        const bankReferenceField = document.getElementById('bank_reference');
+        const eWalletReferenceField = document.getElementById('ewallet_reference');
+        
+        // Function to reset reference fields
+        function resetReferenceFields() {
+            if (bankReferenceField) bankReferenceField.value = '';
+            if (eWalletReferenceField) eWalletReferenceField.value = '';
+        }
+        
+        // Function to handle reference field input
+        function handleReferenceInput(activeField, inactiveField) {
+            // When user types in the active field, copy the value to the hidden field
+            activeField.addEventListener('input', function() {
+                if (inactiveField) {
+                    inactiveField.value = this.value;
+                }
+            });
+        }
+        
+        // Set up reference field handlers
+        if (bankReferenceField && eWalletReferenceField) {
+            handleReferenceInput(bankReferenceField, eWalletReferenceField);
+            handleReferenceInput(eWalletReferenceField, bankReferenceField);
+        }
         
         paymentMethods.forEach(method => {
             method.addEventListener('change', function() {
                 if (this.checked) {
-                    // Show payment details container
-                    paymentDetails.classList.remove('hidden');
-                    
                     // Hide all payment detail sections
-                    document.querySelectorAll('.payment-details').forEach(detail => {
-                        detail.classList.add('hidden');
-                    });
+                    bankTransferDetails.classList.add('hidden');
+                    eWalletDetails.classList.add('hidden');
+                    
+                    resetReferenceFields();
                     
                     // Show selected payment method details
-                    if (this.value === 'credit_card') {
-                        creditCardDetails.classList.remove('hidden');
-                    } else if (this.value === 'bank_transfer') {
+                    if (this.value === 'bank_transfer') {
                         bankTransferDetails.classList.remove('hidden');
+                        bankReferenceField.required = true;
+                        eWalletReferenceField.required = false;
                     } else if (this.value === 'e_wallet') {
                         eWalletDetails.classList.remove('hidden');
+                        eWalletReferenceField.required = true;
+                        bankReferenceField.required = false;
                     }
+                    
+                    // Show submit button
+                    paymentSubmit.classList.remove('hidden');
                     
                     // Add active class to selected method
                     document.querySelectorAll('.payment-method').forEach(label => {
@@ -425,7 +416,7 @@ require_once 'includes/header.php';
                     return;
                 }
                 
-                // Validate reference number
+                // Validate reference number based on selected payment method
                 let referenceInput;
                 if (selectedMethod.value === 'bank_transfer') {
                     referenceInput = document.getElementById('bank_reference');
