@@ -165,10 +165,10 @@ if (!isset($_SESSION['admin_id'])) {
         }
     </style>
 </head>
-<body class="font-sans text-gray-800">
+<body class="font-sans text-gray-800 max-h-screen">
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="sidebar w-64 hidden md:block">
+        <aside class="sidebar w-64 hidden md:block position-fixed max-h-screen">
             <div class="p-6">
                 <h1 class="text-white text-2xl font-bold">Admin Panel</h1>
             </div>
@@ -229,7 +229,7 @@ if (!isset($_SESSION['admin_id'])) {
         </aside>
         
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col max-h-screen overflow-y-auto">
             <!-- Header -->
             <header class="header py-4 px-6 flex items-center justify-between">
                 <button id="mobile-menu-button" class="md:hidden block text-gray-800 focus:outline-none">
