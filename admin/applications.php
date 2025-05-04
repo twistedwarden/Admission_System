@@ -15,6 +15,7 @@ if (!isset($_SESSION['admin_id'])) {
 $status = isset($_GET['status']) ? sanitize($_GET['status']) : '';
 $type = isset($_GET['type']) ? sanitize($_GET['type']) : '';
 $program = isset($_GET['program']) ? intval($_GET['program']) : 0;
+$yearLevel = isset($_GET['year_level']) ? sanitize($_GET['year_level']) : '';
 $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
 
 // Pagination
@@ -46,6 +47,11 @@ if (!empty($type)) {
 if ($program > 0) {
     $whereClauses[] = "a.program_id = ?";
     $params[] = $program;
+}
+
+if (!empty($yearLevel)) {
+    $whereClauses[] = "a.year_level = ?";
+    $params[] = $yearLevel;
 }
 
 if (!empty($search)) {
@@ -88,7 +94,6 @@ require_once 'admin_header.php';
 <div class="p-6">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-dark-purple">Applications</h1>
-        <a href="export_applications.php" class="btn-primary">Export to CSV</a>
     </div>
     
     <!-- Filters -->
@@ -129,6 +134,18 @@ require_once 'admin_header.php';
             </div>
             
             <div>
+                <label for="year_level" class="block text-gray-700 font-medium mb-2">Year Level</label>
+                <select id="year_level" name="year_level" class="form-select">
+                    <option value="">All Year Levels</option>
+                    <option value="1" <?= $yearLevel === '1' ? 'selected' : '' ?>>1st Year</option>
+                    <option value="2" <?= $yearLevel === '2' ? 'selected' : '' ?>>2nd Year</option>
+                    <option value="3" <?= $yearLevel === '3' ? 'selected' : '' ?>>3rd Year</option>
+                    <option value="4" <?= $yearLevel === '4' ? 'selected' : '' ?>>4th Year</option>
+                    <option value="5" <?= $yearLevel === '5' ? 'selected' : '' ?>>5th Year</option>
+                </select>
+            </div>
+            
+            <div>
                 <label for="search" class="block text-gray-700 font-medium mb-2">Search</label>
                 <input type="text" id="search" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Ref no, name, email..." class="form-input">
             </div>
@@ -149,6 +166,7 @@ require_once 'admin_header.php';
                         <th class="table-header">Ref No</th>
                         <th class="table-header">Name</th>
                         <th class="table-header">Program</th>
+                        <th class="table-header">Year Level</th>
                         <th class="table-header">Type</th>
                         <th class="table-header">Status</th>
                         <th class="table-header">Payment</th>
@@ -187,6 +205,9 @@ require_once 'admin_header.php';
                                 </td>
                                 <td class="table-cell">
                                     <?= htmlspecialchars($app['program_name']) ?>
+                                </td>
+                                <td class="table-cell">
+                                    <?= htmlspecialchars($app['year_level']) ?>
                                 </td>
                                 <td class="table-cell">
                                     <span class="capitalize"><?= $app['applicant_type'] ?></span>
@@ -236,7 +257,7 @@ require_once 'admin_header.php';
         <div class="flex justify-center mt-6">
             <div class="flex space-x-1">
                 <?php if ($page > 1): ?>
-                    <a href="?page=<?= $page - 1 ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    <a href="?page=<?= $page - 1 ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&year_level=<?= $yearLevel ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                         Previous
                     </a>
                 <?php endif; ?>
@@ -247,7 +268,7 @@ require_once 'admin_header.php';
                 ?>
                 
                 <?php if ($startPage > 1): ?>
-                    <a href="?page=1&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    <a href="?page=1&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&year_level=<?= $yearLevel ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                         1
                     </a>
                     <?php if ($startPage > 2): ?>
@@ -256,7 +277,7 @@ require_once 'admin_header.php';
                 <?php endif; ?>
                 
                 <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
-                    <a href="?page=<?= $i ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 <?= $i === $page ? 'bg-purple text-white' : 'bg-white border border-gray-300 hover:bg-gray-50' ?> rounded-md">
+                    <a href="?page=<?= $i ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&year_level=<?= $yearLevel ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 <?= $i === $page ? 'bg-purple text-white' : 'bg-white border border-gray-300 hover:bg-gray-50' ?> rounded-md">
                         <?= $i ?>
                     </a>
                 <?php endfor; ?>
@@ -265,13 +286,13 @@ require_once 'admin_header.php';
                     <?php if ($endPage < $totalPages - 1): ?>
                         <span class="px-4 py-2">...</span>
                     <?php endif; ?>
-                    <a href="?page=<?= $totalPages ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    <a href="?page=<?= $totalPages ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&year_level=<?= $yearLevel ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                         <?= $totalPages ?>
                     </a>
                 <?php endif; ?>
                 
                 <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= $page + 1 ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    <a href="?page=<?= $page + 1 ?>&status=<?= $status ?>&type=<?= $type ?>&program=<?= $program ?>&year_level=<?= $yearLevel ?>&search=<?= urlencode($search) ?>" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                         Next
                     </a>
                 <?php endif; ?>
